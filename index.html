@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <title>Online Test Sistemi</title>
+  <title>Online Test Sistemi - Pro</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -15,7 +15,7 @@
   <div class="app">
     <header class="topbar">
       <h1>Online Test Sistemi</h1>
-      <p class="muted">Test eklemek için sol üstteki + butonuna basabilirsin.</p>
+      <p class="muted">Testleri çözün ve son sonuçları anlık olarak görün.</p>
     </header>
 
     <main class="main-grid">
@@ -26,15 +26,13 @@
 
       <section class="work-area panel" id="workArea">
         <div id="welcome" class="welcome">
-          <h2>Çözmek için bir test seç</h2>
-          <p>Testlerin listesi solda görünecektir. Henüz test yoksa yeni bir tane oluştur.</p>
+          <h2>Başlamak için bir test seçin</h2>
+          <p>Sol taraftaki listeden bir teste tıklayarak hemen çözmeye başlayabilirsiniz.</p>
         </div>
         <div id="solveArea" class="hidden"></div>
         <div id="resultArea" class="hidden panel"></div>
       </section>
     </main>
-
-    <footer class="footer muted">Eğitim amaçlı test yönetim paneli.</footer>
   </div>
 
   <div id="modal" class="modal hidden">
@@ -43,31 +41,25 @@
         <h3>Yeni Test Oluştur</h3>
         <button id="modalClose" class="closeBtn">&times;</button>
       </div>
-
       <div class="modal-body">
         <label>Test Başlığı</label>
-        <input id="mTestTitle" type="text" placeholder="Örn: Matematik Genel Deneme" />
+        <input id="mTestTitle" type="text" placeholder="Örn: Coğrafya Testi" />
 
         <div class="row mt">
           <button id="mAddQuestion" class="btn">Soru Ekle</button>
-          <button id="mImportExample" class="btn outline">Örnek Format</button>
-          <button id="mPasteBulk" class="btn outline">Toplu Ekle</button>
+          <button id="mImportExample" class="btn outline">Örnek Getir</button>
         </div>
 
-        <label class="mt">Toplu Soru Alanı (JSON/JS)</label>
-        <textarea id="mBulkArea" placeholder='[{"questionText":"Soru?","options":["A","B","C","D"],"correctAnswer":"B","points":10}]'></textarea>
-        
-        <div class="row">
-          <button id="mPreviewBulk" class="btn">Önizle</button>
-          <button id="mClearBulk" class="btn outline">Temizle</button>
-        </div>
+        <label class="mt">Toplu Soru Ekleme (JSON/Dizi)</label>
+        <textarea id="mBulkArea" placeholder='[{"questionText":"Soru?","options":["A","B","C","D"],"correctAnswer":"A"}]'></textarea>
+        <button id="mPasteBulk" class="btn outline mt" style="width:100%">Toplu Veriyi Formlara Aktar</button>
 
         <hr />
         <div id="modalQuestions" class="modal-questions"></div>
 
         <div class="row action-row mt">
-          <button id="mSaveTest" class="btn primary">Kaydet ve Yayınla</button>
-          <button id="mReset" class="btn outline">Formu Sıfırla</button>
+          <button id="mSaveTest" class="btn primary">Testi Yayınla</button>
+          <button id="mReset" class="btn outline">Sıfırla</button>
         </div>
       </div>
     </div>
