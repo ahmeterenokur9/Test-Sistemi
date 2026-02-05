@@ -1,6 +1,3 @@
-// firebase.js - compat sürümü kullanıyor (9.x compat), global "firebase" objesi üzerinden erişim
-// NOT: create-test.html içinde compat CDN scriptleri yüklendiğinden bu dosya doğrudan çalışacaktır.
-
 const firebaseConfig = {
   apiKey: "AIzaSyD_-8DIN3XOOZeHdzf4C5ciuwee1XI2gVo",
   authDomain: "test-sistemi-9d7bc.firebaseapp.com",
@@ -11,14 +8,10 @@ const firebaseConfig = {
   measurementId: "G-BWH1XQXJC1"
 };
 
+// Firebase başlat
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
-} else {
-  firebase.app(); // zaten başlatıldıysa
 }
 
 const db = firebase.firestore();
-
-// Global erişim (diğer scriptler doğrudan db kullanabilir)
 window.db = db;
-window.firebaseApp = firebase;
