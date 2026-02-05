@@ -5,24 +5,21 @@
   <title>Online Test Sistemi</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
-  <!-- Firebase compat CDN (kolay entegrasyon) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <!-- firebase config -->
   <script src="firebase.js"></script>
 </head>
 <body>
-  <!-- Floating add button (sol üst) -->
   <button id="fabAdd" class="fab" title="Test / Soru Ekle">+</button>
 
   <div class="app">
     <header class="topbar">
       <h1>Online Test Sistemi</h1>
-      <p class="muted">Sol üst + ile test/soru ekle — Testleri çözmek için listeden seç.</p>
+      <p class="muted">Test eklemek için sol üstteki + butonuna basabilirsin.</p>
     </header>
 
     <main class="main-grid">
-      <section class="tests-list panel" id="testsList">
+      <section class="tests-list panel">
         <h2>Mevcut Testler</h2>
         <div id="testsContainer" class="cards"></div>
       </section>
@@ -30,52 +27,47 @@
       <section class="work-area panel" id="workArea">
         <div id="welcome" class="welcome">
           <h2>Çözmek için bir test seç</h2>
-          <p>Test seçildikten sonra test ekranı burada açılacak. Sol üstteki + ile test ekleyebilirsin.</p>
+          <p>Testlerin listesi solda görünecektir. Henüz test yoksa yeni bir tane oluştur.</p>
         </div>
-
-        <!-- Solve area: görünür hale getirilecek JS ile -->
         <div id="solveArea" class="hidden"></div>
-
-        <!-- Result area -->
         <div id="resultArea" class="hidden panel"></div>
       </section>
     </main>
 
-    <footer class="footer muted">Not: Bu sürümde auth yok — herkes test ekleyebilir/çözebilir. Prod için auth eklemeliyiz.</footer>
+    <footer class="footer muted">Eğitim amaçlı test yönetim paneli.</footer>
   </div>
 
-  <!-- CREATE/EDIT MODAL -->
   <div id="modal" class="modal hidden">
     <div class="modal-card">
       <div class="modal-head">
-        <h3>Yeni Test Oluştur (En fazla 10 soru)</h3>
+        <h3>Yeni Test Oluştur</h3>
         <button id="modalClose" class="closeBtn">&times;</button>
       </div>
 
       <div class="modal-body">
         <label>Test Başlığı</label>
-        <input id="mTestTitle" placeholder="Örn: Matematik 1" />
+        <input id="mTestTitle" type="text" placeholder="Örn: Matematik Genel Deneme" />
 
-        <div class="row">
-          <button id="mAddQuestion" class="btn">Yeni Soru Ekle</button>
-          <button id="mImportExample" class="btn outline">JS/JSON Örneği</button>
-          <button id="mPasteBulk" class="btn outline">Toplu → DOM'a Ekle</button>
+        <div class="row mt">
+          <button id="mAddQuestion" class="btn">Soru Ekle</button>
+          <button id="mImportExample" class="btn outline">Örnek Format</button>
+          <button id="mPasteBulk" class="btn outline">Toplu Ekle</button>
         </div>
 
-        <label class="mt">Toplu Ekleme (JS array / JSON array)</label>
-        <textarea id="mBulkArea" placeholder='[{"questionText":"...","options":["A","B","C","D"],"correctAnswer":"B","points":10},...]'></textarea>
+        <label class="mt">Toplu Soru Alanı (JSON/JS)</label>
+        <textarea id="mBulkArea" placeholder='[{"questionText":"Soru?","options":["A","B","C","D"],"correctAnswer":"B","points":10}]'></textarea>
+        
         <div class="row">
           <button id="mPreviewBulk" class="btn">Önizle</button>
           <button id="mClearBulk" class="btn outline">Temizle</button>
         </div>
 
         <hr />
-
         <div id="modalQuestions" class="modal-questions"></div>
 
-        <div class="row action-row">
-          <button id="mSaveTest" class="btn primary">Testi Kaydet</button>
-          <button id="mReset" class="btn outline">Temizle</button>
+        <div class="row action-row mt">
+          <button id="mSaveTest" class="btn primary">Kaydet ve Yayınla</button>
+          <button id="mReset" class="btn outline">Formu Sıfırla</button>
         </div>
       </div>
     </div>
