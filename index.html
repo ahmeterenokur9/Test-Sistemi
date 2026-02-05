@@ -1,23 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Test Oluştur</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8">
+  <title>Test Oluştur - Çoktan Seçmeli</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Firebase compat CDN (kolay kullanım için compat sürümü) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- firebase.js (konfigürasyon) -->
+  <script src="js/firebase.js"></script>
 </head>
 <body>
-    <h1>Test Oluştur - Çoktan Seçmeli</h1>
+  <div class="container">
+    <header>
+      <h1>Test Oluştur — Çoktan Seçmeli</h1>
+      <p class="muted">Manuel soru ekle veya toplu JS/JSON formatında yapıştırıp önizle -> kaydet.</p>
+    </header>
 
-    <div>
-        <label>Test Başlığı:</label>
-        <input type="text" id="testTitle" placeholder="Matematik Testi">
+    <section class="panel">
+      <label>Test Başlığı</label>
+      <input id="testTitle" placeholder="Örn: Matematik 1" />
+
+      <div class="row">
+        <button id="addQuestionBtn" class="btn">Yeni Soru Ekle</button>
+        <button id="showExampleBtn" class="btn outline">JS/JSON Örneğini Göster</button>
+        <button id="pasteFromJsBtn" class="btn outline">Textarea → DOM'a Ekle</button>
+      </div>
+
+      <div class="bulk-area">
+        <label>Toplu Ekle (JS array veya JSON) — örnek almak için "JS/JSON Örneğini Göster"</label>
+        <textarea id="bulkTextarea" placeholder='[ { "questionText": "...", "options": ["A","B","C","D"], "correctAnswer": "B", "points": 10 }, ... ]'></textarea>
+        <div class="row">
+          <button id="previewBulkBtn" class="btn">Önizle</button>
+          <button id="clearBulkBtn" class="btn outline">Temizle</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="questionsContainer" class="questions"></section>
+
+    <div class="row action-row">
+      <button id="saveTestBtn" class="btn primary">Testi Firestore'a Kaydet</button>
+      <button id="resetBtn" class="btn outline">Formu Sıfırla</button>
     </div>
 
-    <div id="questionsContainer"></div>
+    <footer class="muted">Not: Bu sayfa Auth olmadan çalışır (açık). Sonraki aşamada rol ve erişim ekleriz.</footer>
+  </div>
 
-    <button id="addQuestionBtn">Soru Ekle</button>
-    <button id="saveTestBtn">Testi Kaydet</button>
-
-    <script type="module" src="js/createTest.js"></script>
+  <script src="js/createTest.js"></script>
 </body>
 </html>
