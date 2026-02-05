@@ -1,77 +1,54 @@
 :root{
-  --bg:#f6f8fb;
-  --card:#fff;
-  --muted:#6b7280;
-  --accent:#0b5fff;
-  --accent2:#06b6d4;
+  --bg:#f0f2f5;
+  --card:#ffffff;
+  --muted:#64748b;
+  --accent:#2563eb;
   --danger:#ef4444;
-  --glass: rgba(255,255,255,0.7);
-  --shadow: 0 8px 20px rgba(16,24,40,0.06);
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box}
-html,body{height:100%; margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto; background:var(--bg); color:#0f172a}
-.app{max-width:1100px; margin:28px auto; padding:12px}
-.topbar h1{margin:0; font-size:20px}
-.muted{color:var(--muted); font-size:13px}
-.main-grid{display:grid; grid-template-columns:320px 1fr; gap:16px; margin-top:12px}
+body{margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:var(--bg); color:#1e293b}
+.app{max-width:1100px; margin:40px auto; padding:0 20px}
+.topbar{margin-bottom:20px}
+.muted{color:var(--muted); font-size:14px}
+.main-grid{display:grid; grid-template-columns:350px 1fr; gap:20px}
 
-/* panels */
-.panel{background:var(--card); border-radius:12px; padding:16px; box-shadow:var(--shadow);}
-.tests-list h2{margin-top:0; font-size:16px}
+.panel{background:var(--card); border-radius:12px; padding:20px; box-shadow:var(--shadow)}
+.cards{display:flex; flex-direction:column; gap:12px; margin-top:15px}
+.card{border:1px solid #e2e8f0; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center}
+.card h3{margin:0 0 5px 0; font-size:16px}
 
-/* cards */
-.cards{display:flex; flex-direction:column; gap:10px; margin-top:10px}
-.card{border:1px solid #eef2f7; padding:12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center}
-.card .meta{flex:1}
-.card h3{margin:0 0 6px 0; font-size:15px}
-.card .small{color:var(--muted); font-size:12px}
-.card .actions{display:flex; gap:8px}
-
-/* buttons */
-.btn{padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:#111827; color:white; font-weight:600}
-.btn.outline{background:transparent; color:#111827; border:1px solid #e6e9ef}
+.btn{padding:10px 16px; border-radius:8px; border:none; cursor:pointer; font-weight:600; transition:0.2s}
+.btn:active{transform:scale(0.98)}
 .btn.primary{background:var(--accent); color:white}
-.btn.danger{background:var(--danger)}
-.row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.btn.outline{background:transparent; color:var(--accent); border:1px solid var(--accent)}
+.row{display:flex; gap:10px; flex-wrap:wrap}
+.mt{margin-top:15px}
 
-/* fab */
-.fab{position:fixed; left:18px; top:18px; width:56px; height:56px; border-radius:50%; background:var(--accent); color:white; font-size:28px; border:none; cursor:pointer; box-shadow:0 6px 18px rgba(11,95,255,0.15)}
-.fab:active{transform:scale(.98)}
+.fab{position:fixed; left:30px; top:30px; width:60px; height:60px; border-radius:50%; background:var(--accent); color:white; font-size:30px; border:none; cursor:pointer; box-shadow:0 4px 15px rgba(37,99,235,0.3); z-index:100}
 
-/* welcome and solve area */
-.welcome{padding:8px}
-.hidden{display:none}
+.hidden{display:none !important}
 
-/* modal */
-.modal{position:fixed; inset:0; background:rgba(8,10,20,0.45); display:flex; align-items:center; justify-content:center; z-index:999}
-.modal-card{width:880px; max-width:95%; background:var(--card); border-radius:12px; box-shadow:var(--shadow); overflow:auto; max-height:90vh}
-.modal-head{display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #eef2f7}
-.modal-body{padding:14px}
-.closeBtn{background:transparent; border:none; font-size:24px; cursor:pointer}
-#modalQuestions{margin-top:12px; display:flex; flex-direction:column; gap:10px}
-.modal-questions .qblock{padding:10px; border:1px solid #eef2f7; border-radius:8px}
+/* Modal Stilleri */
+.modal{position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:1000}
+.modal-card{width:800px; max-width:90%; background:white; border-radius:15px; max-height:85vh; overflow-y:auto; position:relative}
+.modal-head{padding:20px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:white; z-index:10}
+.closeBtn{font-size:30px; background:none; border:none; cursor:pointer; color:var(--muted)}
+.closeBtn:hover{color:var(--danger)}
+.modal-body{padding:20px}
 
-/* inputs */
-input[type="text"], input[type="number"], textarea{width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e9ef; font-size:14px; margin-top:6px}
-textarea{min-height:120px; resize:vertical}
+input, textarea, select{width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-top:8px}
+textarea{min-height:100px}
 
-/* solve view */
-.solve-card{margin:12px 0; padding:12px; border-radius:10px; border:1px solid #eef2f7}
-.q-title{font-weight:700}
-.options-list{display:flex; flex-direction:column; gap:8px; margin-top:8px}
-.option-btn{display:flex; gap:10px; align-items:center; padding:8px 10px; border-radius:8px; border:1px solid #e6e9ef; cursor:pointer}
-.option-btn input{margin-right:6px}
-/* selected */
-.option-btn.selected{background:linear-gradient(90deg,#eef2ff,#fff); border-color:var(--accent);}
+.qblock{background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:10px; margin-bottom:15px}
 
-/* bottom actions */
-.solve-actions{display:flex; gap:10px; align-items:center; margin-top:12px}
+/* Solve Area */
+.solve-card{background:#fff; border:1px solid #e2e8f0; padding:20px; border-radius:12px; margin-bottom:15px}
+.option-btn{display:block; padding:12px; border:1px solid #e2e8f0; border-radius:8px; margin-top:8px; cursor:pointer}
+.option-btn:hover{background:#f1f5f9}
+.option-btn.selected{border-color:var(--accent); background:#eff6ff}
 
-/* result */
-.result-box{padding:12px; border-radius:8px; background:linear-gradient(180deg,#fbfffb,#fff); border:1px solid #e6f9f0}
-
-/* responsive */
-@media (max-width:880px){
-  .main-grid{grid-template-columns:1fr; padding-bottom:80px}
-  .fab{left:auto; right:18px}
+@media (max-width:850px){
+  .main-grid{grid-template-columns:1fr}
+  .fab{left:auto; right:20px; bottom:20px; top:auto}
 }
