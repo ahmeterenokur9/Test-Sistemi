@@ -9,6 +9,12 @@
   const mReset = document.getElementById('mReset');
   const modalQuestions = document.getElementById('modalQuestions');
   
+  const mBulkArea = document.getElementById('mBulkArea');
+  const mImportExample = document.getElementById('mImportExample');
+  const mPasteBulk = document.getElementById('mPasteBulk');
+  const mPreviewBulk = document.getElementById('mPreviewBulk');
+  const mClearBulk = document.getElementById('mClearBulk');
+
   const testsContainer = document.getElementById('testsContainer');
   const solveArea = document.getElementById('solveArea');
   const resultArea = document.getElementById('resultArea');
@@ -27,24 +33,80 @@
     modal.classList.add('hidden');
   }
 
-  // Olay Dinleyicileri (Kapatma butonunun çalışması için kritik yer)
   fab.addEventListener('click', openModal);
   modalClose.addEventListener('click', closeModal);
   
-  // Modal dışına tıklandığında kapatma (Bonus özellik)
   window.addEventListener('click', (e) => {
     if(e.target === modal) closeModal();
   });
 
-  mReset.addEventListener('click', () => {
-    if(confirm('Tüm formu temizlemek istediğine emin misin?')) {
-        modalQuestions.innerHTML = '';
-        modalQuestionBlocks = [];
-        mTestTitle.value = '';
-        addModalQuestion();
-    }
+  // TOPLU EKLEME MANTIĞI
+  mImportExample.addEventListener('click', () => {
+    const sample = `[
+  {
+    "questionText": "Türkiye'nin başkenti neresidir?",
+    "options": ["İstanbul", "Ankara", "İzmir", "Bursa"],
+    "correctAnswer": "B",
+    "points": 10
+  },
+  {
+    "questionText": "2 + 2 kaç eder?",
+    "options": ["3", "4", "5", "6"],
+    "correctAnswer": "B",
+    "points": 10
+  }
+]`;
+    mBulkArea.value = sample;
   });
 
+  mClearBulk.addEventListener('click', () => mBulkArea.value = '');
+
+  mPasteBulk.addEventListener('click', () => {
+    const parsed = tryParseBulk(mBulkArea.value);
+    if(!parsed) return alert('Veri okunamadı. Lütfen formatı kontrol edin.');
+    
+    parsed.forEach(item => {
+      addModalQuestion(normalizeBulkItem(item));
+    });
+    alert(`${parsed.length} soru eklendi.`);
+  });
+
+  mPreviewBulk.addEventListener('click', () => {
+    const parsed = tryParseBulk(mBulkArea.value);
+    if(!parsed) return alert('Veri okunamadı.');
+    
+    modalQuestions.innerHTML = '';
+    modalQuestionBlocks = [];
+    parsed.forEach(item => addModalQuestion(normalizeBulkItem(item)));
+  });
+
+  function tryParseBulk(text) {
+    if(!text.trim()) return null;
+    try {
+      // Önce standart JSON denemesi
+      return JSON.parse(text);
+    } catch(e) {
+      try {
+        // JSON başarısızsa JavaScript dizisi olarak değerlendir (new Function güvenli bir yöntemdir)
+        const fn = new Function('return ' + text);
+        const result = fn();
+        return Array.isArray(result) ? result : null;
+      } catch(err) {
+        return null;
+      }
+    }
+  }
+
+  function normalizeBulkItem(item) {
+    return {
+      questionText: item.questionText || item.q || '',
+      options: Array.isArray(item.options) ? item.options : (item.opts || ['', '', '', '']),
+      correctAnswer: item.correctAnswer || item.answer || 'A',
+      points: item.points || 10
+    };
+  }
+
+  // SORU BLOĞU OLUŞTURMA
   function addModalQuestion(prefill = {}){
     const wrapper = document.createElement('div');
     wrapper.className = 'qblock';
@@ -62,13 +124,13 @@
       </div>
       <input class="q_text" type="text" placeholder="Soru metni" value="${qText}">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px">
-        <input class="optA" placeholder="A Seçeneği" value="${options[0]}">
-        <input class="optB" placeholder="B Seçeneği" value="${options[1]}">
-        <input class="optC" placeholder="C Seçeneği" value="${options[2]}">
-        <input class="optD" placeholder="D Seçeneği" value="${options[3]}">
+        <input class="optA" placeholder="A Seçeneği" value="${options[0] || ''}">
+        <input class="optB" placeholder="B Seçeneği" value="${options[1] || ''}">
+        <input class="optC" placeholder="C Seçeneği" value="${options[2] || ''}">
+        <input class="optD" placeholder="D Seçeneği" value="${options[3] || ''}">
       </div>
       <div style="display:flex; gap:15px; margin-top:10px; align-items:center">
-        <span>Doğru:</span>
+        <span>Doğru Cevap:</span>
         <select class="correct" style="width:70px">
           <option value="A" ${correct==='A'?'selected':''}>A</option>
           <option value="B" ${correct==='B'?'selected':''}>B</option>
@@ -83,6 +145,7 @@
     wrapper.querySelector('.removeQ').addEventListener('click', () => {
       wrapper.remove();
       modalQuestionBlocks = modalQuestionBlocks.filter(b => b !== wrapper);
+      refreshIndices();
     });
 
     modalQuestions.appendChild(wrapper);
@@ -90,13 +153,19 @@
     wrapper.scrollIntoView({behavior:'smooth'});
   }
 
+  function refreshIndices() {
+    modalQuestionBlocks.forEach((b, i) => {
+        b.querySelector('strong').textContent = `Soru ${i + 1}`;
+    });
+  }
+
   mAddQuestion.addEventListener('click', () => addModalQuestion());
 
-  // KAYDETME İŞLEMİ
+  // TESTİ KAYDET
   mSaveTest.addEventListener('click', async () => {
     const title = mTestTitle.value.trim();
-    if(!title) return alert('Lütfen test başlığı girin.');
-    if(modalQuestionBlocks.length === 0) return alert('En az bir soru eklemelisiniz.');
+    if(!title) return alert('Test başlığı girin.');
+    if(modalQuestionBlocks.length === 0) return alert('Soru eklemediniz.');
 
     mSaveTest.disabled = true;
     mSaveTest.textContent = 'Kaydediliyor...';
@@ -108,8 +177,10 @@
         totalQuestions: modalQuestionBlocks.length
       });
 
-      for(let block of modalQuestionBlocks) {
-        const qData = {
+      const batch = db.batch();
+      modalQuestionBlocks.forEach(block => {
+        const qRef = db.collection('questions').doc();
+        batch.set(qRef, {
           testId: testRef.id,
           questionText: block.querySelector('.q_text').value,
           options: [
@@ -120,33 +191,26 @@
           ],
           correctAnswer: block.querySelector('.correct').value,
           points: parseInt(block.querySelector('.points').value) || 0
-        };
-        await db.collection('questions').add(qData);
-      }
+        });
+      });
+      await batch.commit();
 
-      alert('Test başarıyla kaydedildi!');
-      closeModal();
-      location.reload(); // Sayfayı yenileyerek listeyi güncelle
-    } catch (error) {
-      console.error(error);
-      alert('Hata oluştu, konsolu kontrol edin.');
+      alert('Test kaydedildi!');
+      location.reload();
+    } catch (e) {
+      alert('Hata: ' + e.message);
     } finally {
       mSaveTest.disabled = false;
-      mSaveTest.textContent = 'Kaydet ve Yayınla';
+      mSaveTest.textContent = 'Testi Kaydet';
     }
   });
 
-  // TESTLERİ LİSTELEME
+  // TEST LİSTESİ VE SİLME ÖZELLİĞİ
   async function loadTests() {
     testsContainer.innerHTML = 'Yükleniyor...';
     const snapshot = await db.collection('tests').orderBy('createdAt', 'desc').get();
     testsContainer.innerHTML = '';
     
-    if(snapshot.empty) {
-        testsContainer.innerHTML = '<p class="muted">Henüz test eklenmemiş.</p>';
-        return;
-    }
-
     snapshot.forEach(doc => {
       const data = doc.data();
       const card = document.createElement('div');
@@ -156,19 +220,45 @@
           <h3>${data.title}</h3>
           <small class="muted">${data.totalQuestions} Soru</small>
         </div>
-        <button class="btn primary solve-btn" data-id="${doc.id}" data-title="${data.title}">Çöz</button>
+        <div class="actions">
+          <button class="btn primary solve-btn">Çöz</button>
+          <button class="btn danger delete-btn">Sil</button>
+        </div>
       `;
-      card.querySelector('.solve-btn').addEventListener('click', () => startTest(doc.id, data.title));
+      
+      card.querySelector('.solve-btn').onclick = () => startTest(doc.id, data.title);
+      card.querySelector('.delete-btn').onclick = () => deleteTest(doc.id);
+      
       testsContainer.appendChild(card);
     });
   }
 
-  // TEST ÇÖZME EKRANI
+  async function deleteTest(id) {
+    if(!confirm('Bu testi ve tüm sorularını silmek istediğine emin misin?')) return;
+    
+    try {
+      // 1. Soruları sil
+      const qs = await db.collection('questions').where('testId', '==', id).get();
+      const batch = db.batch();
+      qs.forEach(q => batch.delete(q.ref));
+      
+      // 2. Testin kendisini sil
+      batch.delete(db.collection('tests').doc(id));
+      
+      await batch.commit();
+      alert('Test silindi.');
+      loadTests();
+    } catch (e) {
+      alert('Silme hatası: ' + e.message);
+    }
+  }
+
+  // TEST ÇÖZME VE DİĞER FONKSİYONLAR...
   async function startTest(id, title) {
     welcome.classList.add('hidden');
     resultArea.classList.add('hidden');
     solveArea.classList.remove('hidden');
-    solveArea.innerHTML = 'Sorular getiriliyor...';
+    solveArea.innerHTML = 'Yükleniyor...';
 
     const qSnap = await db.collection('questions').where('testId', '==', id).get();
     currentQuestions = [];
@@ -179,8 +269,8 @@
       const qCard = document.createElement('div');
       qCard.className = 'solve-card';
       qCard.innerHTML = `
-        <p><strong>Soru ${i+1}:</strong> ${q.questionText}</p>
-        <div class="options-container" data-qid="${q.id}">
+        <p><strong>${i+1}.</strong> ${q.questionText}</p>
+        <div>
           ${q.options.map((opt, idx) => `
             <label class="option-btn">
               <input type="radio" name="q_${q.id}" value="${['A','B','C','D'][idx]}">
@@ -189,38 +279,39 @@
           `).join('')}
         </div>
       `;
+      qCard.querySelectorAll('.option-btn').forEach(btn => {
+        btn.onclick = () => {
+          qCard.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+        };
+      });
       solveArea.appendChild(qCard);
     });
 
-    const submitBtn = document.createElement('button');
-    submitBtn.className = 'btn primary mt';
-    submitBtn.textContent = 'Testi Bitir ve Puanla';
-    submitBtn.onclick = finishTest;
-    solveArea.appendChild(submitBtn);
+    const finishBtn = document.createElement('button');
+    finishBtn.className = 'btn primary mt';
+    finishBtn.textContent = 'Testi Tamamla';
+    finishBtn.onclick = finishTest;
+    solveArea.appendChild(finishBtn);
   }
 
   function finishTest() {
     let score = 0;
-    let totalPossible = 0;
-
+    let total = 0;
     currentQuestions.forEach(q => {
-      totalPossible += q.points;
+      total += q.points;
       const selected = document.querySelector(`input[name="q_${q.id}"]:checked`);
-      if(selected && selected.value === q.correctAnswer) {
-        score += q.points;
-      }
+      if(selected && selected.value === q.correctAnswer) score += q.points;
     });
 
     solveArea.classList.add('hidden');
     resultArea.classList.remove('hidden');
     resultArea.innerHTML = `
-      <h2>Sonuç: ${score} / ${totalPossible} Puan</h2>
-      <p>Başarı Oranı: %${Math.round((score/totalPossible)*100)}</p>
-      <button class="btn outline mt" onclick="location.reload()">Listeye Dön</button>
+      <h2>Test Sonucu</h2>
+      <p>Toplam Puan: <strong>${score} / ${total}</strong></p>
+      <button class="btn outline mt" onclick="location.reload()">Anasayfaya Dön</button>
     `;
   }
 
-  // Başlat
   loadTests();
-
 })();
