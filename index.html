@@ -1,53 +1,86 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <title>Test Oluştur - Çoktan Seçmeli</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="style.css">
-  <!-- Firebase compat CDN (kolay kullanım için compat sürümü) -->
+  <meta charset="utf-8" />
+  <title>Online Test Sistemi</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Firebase compat CDN (kolay entegrasyon) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <!-- firebase.js (konfigürasyon) -->
+  <!-- firebase config -->
   <script src="firebase.js"></script>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Test Oluştur — Çoktan Seçmeli</h1>
-      <p class="muted">Manuel soru ekle veya toplu JS/JSON formatında yapıştırıp önizle -> kaydet.</p>
+  <!-- Floating add button (sol üst) -->
+  <button id="fabAdd" class="fab" title="Test / Soru Ekle">+</button>
+
+  <div class="app">
+    <header class="topbar">
+      <h1>Online Test Sistemi</h1>
+      <p class="muted">Sol üst + ile test/soru ekle — Testleri çözmek için listeden seç.</p>
     </header>
 
-    <section class="panel">
-      <label>Test Başlığı</label>
-      <input id="testTitle" placeholder="Örn: Matematik 1" />
+    <main class="main-grid">
+      <section class="tests-list panel" id="testsList">
+        <h2>Mevcut Testler</h2>
+        <div id="testsContainer" class="cards"></div>
+      </section>
 
-      <div class="row">
-        <button id="addQuestionBtn" class="btn">Yeni Soru Ekle</button>
-        <button id="showExampleBtn" class="btn outline">JS/JSON Örneğini Göster</button>
-        <button id="pasteFromJsBtn" class="btn outline">Textarea → DOM'a Ekle</button>
-      </div>
-
-      <div class="bulk-area">
-        <label>Toplu Ekle (JS array veya JSON) — örnek almak için "JS/JSON Örneğini Göster"</label>
-        <textarea id="bulkTextarea" placeholder='[ { "questionText": "...", "options": ["A","B","C","D"], "correctAnswer": "B", "points": 10 }, ... ]'></textarea>
-        <div class="row">
-          <button id="previewBulkBtn" class="btn">Önizle</button>
-          <button id="clearBulkBtn" class="btn outline">Temizle</button>
+      <section class="work-area panel" id="workArea">
+        <div id="welcome" class="welcome">
+          <h2>Çözmek için bir test seç</h2>
+          <p>Test seçildikten sonra test ekranı burada açılacak. Sol üstteki + ile test ekleyebilirsin.</p>
         </div>
-      </div>
-    </section>
 
-    <section id="questionsContainer" class="questions"></section>
+        <!-- Solve area: görünür hale getirilecek JS ile -->
+        <div id="solveArea" class="hidden"></div>
 
-    <div class="row action-row">
-      <button id="saveTestBtn" class="btn primary">Testi Firestore'a Kaydet</button>
-      <button id="resetBtn" class="btn outline">Formu Sıfırla</button>
-    </div>
+        <!-- Result area -->
+        <div id="resultArea" class="hidden panel"></div>
+      </section>
+    </main>
 
-    <footer class="muted">Not: Bu sayfa Auth olmadan çalışır (açık). Sonraki aşamada rol ve erişim ekleriz.</footer>
+    <footer class="footer muted">Not: Bu sürümde auth yok — herkes test ekleyebilir/çözebilir. Prod için auth eklemeliyiz.</footer>
   </div>
 
-  <script src="createTest.js"></script>
+  <!-- CREATE/EDIT MODAL -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Yeni Test Oluştur (En fazla 10 soru)</h3>
+        <button id="modalClose" class="closeBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <label>Test Başlığı</label>
+        <input id="mTestTitle" placeholder="Örn: Matematik 1" />
+
+        <div class="row">
+          <button id="mAddQuestion" class="btn">Yeni Soru Ekle</button>
+          <button id="mImportExample" class="btn outline">JS/JSON Örneği</button>
+          <button id="mPasteBulk" class="btn outline">Toplu → DOM'a Ekle</button>
+        </div>
+
+        <label class="mt">Toplu Ekleme (JS array / JSON array)</label>
+        <textarea id="mBulkArea" placeholder='[{"questionText":"...","options":["A","B","C","D"],"correctAnswer":"B","points":10},...]'></textarea>
+        <div class="row">
+          <button id="mPreviewBulk" class="btn">Önizle</button>
+          <button id="mClearBulk" class="btn outline">Temizle</button>
+        </div>
+
+        <hr />
+
+        <div id="modalQuestions" class="modal-questions"></div>
+
+        <div class="row action-row">
+          <button id="mSaveTest" class="btn primary">Testi Kaydet</button>
+          <button id="mReset" class="btn outline">Temizle</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
