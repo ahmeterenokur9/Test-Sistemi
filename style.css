@@ -1208,6 +1208,17 @@ body.dark-mode .correct-blank-answer{
     flex-wrap: wrap;
   }
 
+  .top-right-section {
+    width: 100%;
+    flex-direction: row;  /* column'dan row'a değiştirin */
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .piggy-bank-display {
+    flex: 0 0 auto;  /* EKLEYIN - genişlemeyi engellemek için */
+  }
+
   .nav-btn {
     padding: 8px 12px;
     font-size: 13px;
