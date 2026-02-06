@@ -33,7 +33,7 @@
   let activeTestId = null;
   let currentTestType = 'multiple_choice'; // 'multiple_choice' veya 'fill_blank'
 
-  // --- TIP SEÇÄ°M MODALI ---
+  // --- TIP SEÇİM MODALI ---
   function openTypeModal() {
     typeModal.classList.remove('hidden');
   }
