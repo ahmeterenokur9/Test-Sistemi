@@ -5,6 +5,34 @@ let currentQuestions = [];
 let currentTestId = null;
 let currentQuestionType = 'multiple_choice';
 let darkMode = false;
+let piggyBankAmount = 0;
+
+// Firebase'den kumbara değerini yükle
+async function loadPiggyBank() {
+  try {
+    const doc = await db.collection('settings').doc('piggyBank').get();
+    if (doc.exists) {
+      piggyBankAmount = doc.data().amount || 0;
+    } else {
+      // İlk kez yükleniyorsa, varsayılan değer 0 ile oluştur
+      await db.collection('settings').doc('piggyBank').set({ amount: 0 });
+      piggyBankAmount = 0;
+    }
+    updatePiggyBankDisplay();
+  } catch (err) {
+    console.error('Kumbara yüklenemedi:', err);
+    piggyBankAmount = 0;
+    updatePiggyBankDisplay();
+  }
+}
+
+// Kumbara gösterimini güncelle
+function updatePiggyBankDisplay() {
+  const piggyElement = document.getElementById('piggyBankAmount');
+  if (piggyElement) {
+    piggyElement.textContent = piggyBankAmount.toLocaleString('tr-TR');
+  }
+}
 
 // Firebase'den testleri yükle
 async function loadTests() {
@@ -268,52 +296,50 @@ function startTest(testId) {
 
   let html = `<h2>${test.title}</h2>`;
   test.questions.forEach((q, i) => {
-    html += `<div class="solve-card">`;
-    html += `<p><strong>Soru ${i + 1}:</strong> ${q.text}</p>`;
+    html += `
+      <div class="solve-card">
+        <div class="solve-q-header">
+          <span class="solve-q-number">Soru ${i + 1}</span>
+          <span class="solve-q-points">${q.points || 10} Puan</span>
+        </div>
+        <div class="solve-q-text">${q.text}</div>
+    `;
     
     if (test.questionType === 'multiple_choice') {
-      html += `<div class="options-group">`;
+      html += `<div class="solve-options">`;
       ['A', 'B', 'C', 'D'].forEach(opt => {
         html += `
-          <label class="option-btn">
-            <input type="radio" name="q${i}" value="${opt}" />
-            <span><strong>${opt})</strong> ${q.options[opt]}</span>
-          </label>
+          <div class="solve-opt">
+            <input type="radio" id="q${i}_${opt}" name="q${i}" value="${opt}" />
+            <label for="q${i}_${opt}">
+              <strong>${opt})</strong> ${q.options[opt]}
+            </label>
+          </div>
         `;
       });
       html += `</div>`;
     } else if (test.questionType === 'fill_blank') {
       html += `
-        <input 
-          type="text" 
-          class="blank-answer" 
-          data-question-index="${i}"
-          placeholder="Cevabınızı yazın..."
-        />
+        <div class="solve-blank-input">
+          <input 
+            type="text" 
+            class="blank-answer" 
+            data-question-index="${i}"
+            placeholder="Cevabınızı yazın..."
+          />
+        </div>
       `;
     }
     
     html += `</div>`;
   });
 
-  html += `<button class="btn success" style="width:100%; margin-top:16px" onclick="submitTest()">
-    ✓ Testi Bitir
-  </button>`;
+  html += `
+    <button class="btn success" style="width:100%; margin-top:16px" onclick="submitTest()">
+      ✓ Testi Bitir
+    </button>
+  `;
   solveArea.innerHTML = html;
-
-  // Şık seçimi için event listener
-  document.querySelectorAll('.option-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const radio = this.querySelector('input[type="radio"]');
-      radio.checked = true;
-      
-      const name = radio.name;
-      document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
-        r.closest('.option-btn').classList.remove('selected');
-      });
-      this.classList.add('selected');
-    });
-  });
 }
 
 async function submitTest() {
@@ -372,33 +398,37 @@ function showResult(score, total) {
   resultArea.classList.remove('hidden');
 
   const percentage = ((score / total) * 100).toFixed(0);
-  let resultClass = 'danger';
+  let resultClass = 'poor';
   let emoji = '😢';
   let message = 'Daha fazla çalışmalısın!';
 
-  if (percentage >= 70) {
-    resultClass = 'success';
+  if (percentage >= 90) {
+    resultClass = 'excellent';
     emoji = '🎉';
+    message = 'Mükemmel bir performans!';
+  } else if (percentage >= 70) {
+    resultClass = 'good';
+    emoji = '😊';
     message = 'Harika bir performans!';
   } else if (percentage >= 50) {
-    resultClass = 'warning';
-    emoji = '😊';
+    resultClass = 'average';
+    emoji = '🙂';
     message = 'Fena değil, biraz daha gayret!';
   }
 
   resultArea.innerHTML = `
-    <div style="text-align:center; padding:40px 20px">
+    <div class="result-header">
       <div style="font-size:80px; margin-bottom:20px">${emoji}</div>
-      <h2 style="margin:0 0 12px 0; color:var(--text-primary)">Test Tamamlandı!</h2>
+      <h2>Test Tamamlandı!</h2>
       <p style="color:var(--muted); margin:0 0 32px 0">${message}</p>
       
-      <div class="result-score ${resultClass}">
+      <div class="score-display">
         <div class="score-big">${score}</div>
         <div class="score-divider">/</div>
         <div class="score-total-big">${total}</div>
       </div>
       
-      <div class="result-percentage ${resultClass}" style="margin-top:20px">
+      <div class="result-percentage ${resultClass}">
         <strong>%${percentage}</strong> Başarı
       </div>
 
@@ -530,7 +560,7 @@ function showNotesPanel() {
       <div id="notesContainer" class="notes-list"></div>
     </div>
   `;
-  
+
   loadNotes();
 }
 
@@ -538,25 +568,29 @@ function showNotesPanel() {
 document.getElementById('saveNote').addEventListener('click', async () => {
   const title = document.getElementById('noteTitle').value.trim();
   const content = document.getElementById('noteContent').value.trim();
-  
-  if (!title || !content) {
-    alert('Lütfen başlık ve içerik girin!');
+
+  if (!title) {
+    alert('Lütfen not başlığı girin!');
     return;
   }
-  
+
+  if (!content) {
+    alert('Lütfen not içeriği girin!');
+    return;
+  }
+
   try {
     await db.collection('notes').add({
       title,
       content,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    
+
     noteModal.classList.add('hidden');
     alert('Not başarıyla kaydedildi!');
     
-    // Eğer notlar paneli açıksa yenile
-    const notesContainer = document.getElementById('notesContainer');
-    if (notesContainer) {
+    // Eğer notlar paneli açıksa, yeniden yükle
+    if (!document.getElementById('welcome').classList.contains('hidden') === false) {
       await loadNotes();
     }
   } catch (err) {
@@ -565,26 +599,26 @@ document.getElementById('saveNote').addEventListener('click', async () => {
   }
 });
 
-// Tip seçimi
+// Soru tipi seçim
 document.getElementById('selectMultipleChoice').addEventListener('click', () => {
-  currentQuestionType = 'multiple_choice';
-  typeModal.classList.add('hidden');
-  openModal();
+  openTestModal('multiple_choice');
 });
 
 document.getElementById('selectFillBlank').addEventListener('click', () => {
-  currentQuestionType = 'fill_blank';
-  typeModal.classList.add('hidden');
-  openModal();
+  openTestModal('fill_blank');
 });
 
-function openModal() {
+function openTestModal(type) {
+  currentQuestionType = type;
   currentQuestions = [];
+  
   document.getElementById('mTestTitle').value = '';
   document.getElementById('mBulkArea').value = '';
   document.getElementById('modalQuestions').innerHTML = '';
   
-  const typeText = currentQuestionType === 'fill_blank' ? 'Boşluk Doldurma' : 'Çoktan Seçmeli';
+  typeModal.classList.add('hidden');
+  
+  const typeText = type === 'fill_blank' ? 'Boşluk Doldurma' : 'Çoktan Seçmeli';
   document.getElementById('modalTitle').textContent = `Yeni ${typeText} Test Oluştur`;
   
   modal.classList.remove('hidden');
@@ -857,4 +891,5 @@ document.getElementById('mSaveTest').addEventListener('click', async () => {
 window.addEventListener('DOMContentLoaded', () => {
   loadDarkModePreference();
   loadTests();
+  loadPiggyBank(); // Kumbara değerini yükle
 });
