@@ -2,43 +2,65 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <title>Modern Test Sistemi</title>
+  <title>Online Test Sistemi - Pro</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase.js"></script>
 </head>
 <body>
-  <button id="fabAdd" class="fab" title="Yeni Test/Soru Ekle">+</button>
+  <button id="fabAdd" class="fab" title="Test / Soru Ekle">+</button>
 
   <div class="app">
     <header class="topbar">
-      <h1>🎓 Modern Test Sistemi</h1>
-      <p class="muted">Test ve boşluk doldurma soruları oluşturun, çözün ve sonuçları anlık görün</p>
+      <h1>Online Test Sistemi</h1>
+      <p class="muted">Testleri çözün ve son sonuçları anlık olarak görün.</p>
     </header>
 
     <main class="main-grid">
       <section class="tests-list panel">
-        <h2>Testler</h2>
-        <div id="testsContainer"></div>
+        <h2>Mevcut Testler</h2>
+        <div id="testsContainer" class="cards"></div>
       </section>
 
-      <section class="work-area panel">
+      <section class="work-area panel" id="workArea">
         <div id="welcome" class="welcome">
-          <h2>👋 Hoş Geldiniz</h2>
-          <p>Başlamak için sol taraftaki listeden bir test seçin veya sağ alttaki + butonuna tıklayarak yeni test oluşturun.</p>
+          <h2>Başlamak için bir test seçin</h2>
+          <p>Sol taraftaki listeden bir teste tıklayarak hemen çözmeye başlayabilirsiniz.</p>
         </div>
         <div id="solveArea" class="hidden"></div>
-        <div id="resultArea" class="hidden"></div>
+        <div id="resultArea" class="hidden panel"></div>
       </section>
     </main>
   </div>
 
-  <!-- Modal: Test Oluşturma -->
+  <!-- Soru Tipi Seçim Modalı -->
+  <div id="typeModal" class="modal hidden">
+    <div class="modal-card type-selection">
+      <div class="modal-head">
+        <h3>Soru Tipi Seçin</h3>
+        <button id="typeModalClose" class="closeBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="info-text">Oluşturmak istediğiniz test tipini seçin</p>
+        <div class="type-options">
+          <button id="selectMultipleChoice" class="type-card">
+            <div class="type-icon">📝</div>
+            <h4>Çoktan Seçmeli Test</h4>
+            <p>A, B, C, D şıklarından oluşan klasik test formatı</p>
+          </button>
+          <button id="selectFillBlank" class="type-card">
+            <div class="type-icon">✍️</div>
+            <h4>Boşluk Doldurma</h4>
+            <p>Cümlelerdeki boşlukları dolduran test formatı</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ana Test Oluşturma Modalı -->
   <div id="modal" class="modal hidden">
     <div class="modal-card">
       <div class="modal-head">
@@ -46,48 +68,42 @@
         <button id="modalClose" class="closeBtn">&times;</button>
       </div>
       <div class="modal-body">
-        <!-- Adım 1: Soru Tipi Seçimi -->
-        <div id="stepTypeSelection">
-          <label>Soru Tipini Seçin</label>
-          <div class="type-selection">
-            <div class="type-option" data-type="quiz">
-              <div class="icon">📝</div>
-              <h4>Test (Çoktan Seçmeli)</h4>
-              <p>Klasik test soruları (A, B, C, D şıklı)</p>
-            </div>
-            <div class="type-option" data-type="fillblank">
-              <div class="icon">✏️</div>
-              <h4>Boşluk Doldurma</h4>
-              <p>Cevap havuzundan kelime seçerek boşlukları doldurma</p>
-            </div>
-          </div>
+        <div class="form-group">
+          <label>Test Başlığı</label>
+          <input id="mTestTitle" type="text" placeholder="Örn: Coğrafya Testi" />
         </div>
 
-        <!-- Adım 2: Test Bilgileri -->
-        <div id="stepTestInfo" class="hidden">
-          <label>Test Başlığı</label>
-          <input id="mTestTitle" type="text" placeholder="Örn: Matematik Testi - Konu: Kesirler" />
+        <div class="action-buttons">
+          <button id="mAddQuestion" class="btn primary">
+            <span class="btn-icon">+</span> Soru Ekle
+          </button>
+          <button id="mImportExample" class="btn outline">
+            <span class="btn-icon">📋</span> Örnek Getir
+          </button>
+        </div>
 
-          <div class="row mt">
-            <button id="mAddQuestion" class="btn btn-primary">➕ Soru Ekle</button>
-            <button id="mImportExample" class="btn btn-outline">📋 Örnek Getir</button>
-          </div>
+        <div class="form-group bulk-section">
+          <label>
+            Toplu Soru Ekleme 
+            <span class="label-hint">(JSON formatında)</span>
+          </label>
+          <textarea id="mBulkArea" placeholder='Örnek formatı görmek için "Örnek Getir" butonuna tıklayın'></textarea>
+          <button id="mPasteBulk" class="btn outline full-width">
+            <span class="btn-icon">⬇️</span> Toplu Veriyi Formlara Aktar
+          </button>
+        </div>
 
-          <label class="mt">Toplu Soru Ekleme (JSON Formatı)</label>
-          <textarea id="mBulkArea" placeholder='Toplu soru eklemek için JSON formatında yapıştırın...'></textarea>
-          <button id="mPasteBulk" class="btn btn-outline mt" style="width:100%">📥 Toplu Veriyi İçe Aktar</button>
+        <div class="divider"></div>
 
-          <hr style="border: none; border-top: 1px solid var(--border); margin: 24px 0;" />
-          
-          <div id="modalQuestions"></div>
+        <div id="modalQuestions" class="modal-questions"></div>
 
-          <div class="row mt" style="justify-content: space-between;">
-            <button id="mBackToType" class="btn btn-outline">⬅️ Geri</button>
-            <div class="row">
-              <button id="mReset" class="btn btn-outline">🔄 Sıfırla</button>
-              <button id="mSaveTest" class="btn btn-success">✅ Testi Yayınla</button>
-            </div>
-          </div>
+        <div class="modal-footer">
+          <button id="mReset" class="btn outline">
+            <span class="btn-icon">🔄</span> Sıfırla
+          </button>
+          <button id="mSaveTest" class="btn success">
+            <span class="btn-icon">✓</span> Testi Yayınla
+          </button>
         </div>
       </div>
     </div>
