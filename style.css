@@ -116,8 +116,8 @@ body.dark-mode .piggy-bank-display:hover {
 }
 
 .piggy-label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 8px;
+  font-weight: 500;
   color: #92400e;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -128,7 +128,7 @@ body.dark-mode .piggy-label {
 }
 
 .piggy-amount {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
   color: #92400e;
   font-family: 'Courier New', monospace;
