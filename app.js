@@ -1,8 +1,10 @@
 // Global değişkenler
 let allTests = [];
+let allNotes = [];
 let currentQuestions = [];
 let currentTestId = null;
 let currentQuestionType = 'multiple_choice';
+let darkMode = false;
 
 // Firebase'den testleri yükle
 async function loadTests() {
@@ -16,6 +18,21 @@ async function loadTests() {
   } catch (err) {
     console.error(err);
     testsContainer.innerHTML = '<p style="color:#ef4444">Testler yüklenemedi</p>';
+  }
+}
+
+// Firebase'den notları yükle
+async function loadNotes() {
+  const notesContainer = document.getElementById('notesContainer');
+  notesContainer.innerHTML = '<p style="color:#94a3b8">Notlar yükleniyor...</p>';
+  
+  try {
+    const snapshot = await db.collection('notes').orderBy('createdAt', 'desc').get();
+    allNotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderNotesList();
+  } catch (err) {
+    console.error(err);
+    notesContainer.innerHTML = '<p style="color:#ef4444">Notlar yüklenemedi</p>';
   }
 }
 
@@ -36,25 +53,50 @@ function renderTestsList() {
         <div class="card-header">
           <div>
             <h3 style="margin:0 0 4px 0; font-size:16px">${t.title}</h3>
-            <span style="font-size:12px; color:#64748b">${typeIcon} ${typeLabel}</span>
+            <span style="font-size:12px; color:var(--muted)">${typeIcon} ${typeLabel}</span>
           </div>
           <div class="stats-badge">
             <strong>${totalQ}</strong> soru<br>
             <strong>${totalAttempts}</strong> çözüm
           </div>
         </div>
-        <div style="display:flex; gap:8px; margin-top:8px">
-          <button class="btn primary" style="flex:1" onclick="startTest('${t.id}')">
-            <span class="btn-icon">▶️</span> Başla
+        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap: wrap;">
+          <button class="btn primary" style="flex:1; min-width: 120px;" onclick="startTest('${t.id}')">
+            ▶️ Başla
           </button>
           ${totalAttempts > 0 ? `
-            <button class="btn outline" onclick="previewTest('${t.id}')">
-              <span class="btn-icon">👁️</span> Ön İzleme
+            <button class="btn outline" style="flex:1; min-width: 120px;" onclick="previewTest('${t.id}')">
+              👁️ Ön İzleme
             </button>
           ` : ''}
-          <button class="btn danger" onclick="deleteTest('${t.id}')">
-            <span class="btn-icon">🗑️</span>
+          <button class="btn delete-btn" onclick="deleteTest('${t.id}')" title="Sil">
+            <span style="font-size: 16px;">🗑</span>
           </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderNotesList() {
+  const notesContainer = document.getElementById('notesContainer');
+  if (allNotes.length === 0) {
+    notesContainer.innerHTML = '<p style="color:var(--muted)">Henüz not eklenmemiş</p>';
+    return;
+  }
+  notesContainer.innerHTML = allNotes.map(n => {
+    const date = n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleDateString('tr-TR') : 'Tarih yok';
+    return `
+      <div class="note-card">
+        <div class="note-header">
+          <h4>${n.title}</h4>
+          <button class="btn delete-btn" onclick="deleteNote('${n.id}')" title="Sil">
+            <span style="font-size: 14px;">🗑</span>
+          </button>
+        </div>
+        <p class="note-content">${n.content}</p>
+        <div class="note-footer">
+          <span class="note-date">📅 ${date}</span>
         </div>
       </div>
     `;
@@ -105,7 +147,15 @@ async function previewTest(testId) {
 
   test.questions.forEach((q, idx) => {
     const userAnswer = userAnswers[idx];
-    const isCorrect = userAnswer === q.correct;
+    let isCorrect = false;
+    
+    if (test.questionType === 'fill_blank') {
+      // Büyük küçük harf duyarsız karşılaştırma
+      isCorrect = (userAnswer || '').toLowerCase().trim() === (q.correct || '').toLowerCase().trim();
+    } else {
+      isCorrect = userAnswer === q.correct;
+    }
+    
     const statusClass = isCorrect ? 'correct' : 'incorrect';
     const statusIcon = isCorrect ? '✓' : '✗';
     const statusText = isCorrect ? 'Doğru' : 'Yanlış';
@@ -182,7 +232,7 @@ async function previewTest(testId) {
     </div>
     <div style="margin-top:24px; text-align:center">
       <button class="btn outline" onclick="closePreview()">
-        <span class="btn-icon">←</span> Geri Dön
+        ← Geri Dön
       </button>
     </div>
   `;
@@ -247,7 +297,7 @@ function startTest(testId) {
   });
 
   html += `<button class="btn success" style="width:100%; margin-top:16px" onclick="submitTest()">
-    <span class="btn-icon">✓</span> Testi Bitir
+    ✓ Testi Bitir
   </button>`;
   solveArea.innerHTML = html;
 
@@ -287,6 +337,7 @@ async function submitTest() {
       if (input) {
         const userAnswer = input.value.trim();
         answers[i] = userAnswer;
+        // Büyük küçük harf duyarsız karşılaştırma
         if (userAnswer.toLowerCase() === (q.correct || '').toLowerCase()) {
           score++;
         }
@@ -338,8 +389,8 @@ function showResult(score, total) {
   resultArea.innerHTML = `
     <div style="text-align:center; padding:40px 20px">
       <div style="font-size:80px; margin-bottom:20px">${emoji}</div>
-      <h2 style="margin:0 0 12px 0; color:#0f172a">Test Tamamlandı!</h2>
-      <p style="color:#64748b; margin:0 0 32px 0">${message}</p>
+      <h2 style="margin:0 0 12px 0; color:var(--text-primary)">Test Tamamlandı!</h2>
+      <p style="color:var(--muted); margin:0 0 32px 0">${message}</p>
       
       <div class="result-score ${resultClass}">
         <div class="score-big">${score}</div>
@@ -352,7 +403,7 @@ function showResult(score, total) {
       </div>
 
       <button class="btn outline" style="margin-top:32px" onclick="backToHome()">
-        <span class="btn-icon">←</span> Ana Sayfaya Dön
+        ← Ana Sayfaya Dön
       </button>
     </div>
   `;
@@ -384,15 +435,43 @@ async function deleteTest(testId) {
   }
 }
 
+async function deleteNote(noteId) {
+  if (!confirm('Bu notu silmek istediğinize emin misiniz?')) return;
+  
+  try {
+    await db.collection('notes').doc(noteId).delete();
+    await loadNotes();
+  } catch (err) {
+    console.error(err);
+    alert('Not silinemedi!');
+  }
+}
+
 // Modal İşlemleri
 const modal = document.getElementById('modal');
 const typeModal = document.getElementById('typeModal');
-const fabAdd = document.getElementById('fabAdd');
+const noteModal = document.getElementById('noteModal');
 const modalClose = document.getElementById('modalClose');
 const typeModalClose = document.getElementById('typeModalClose');
+const noteModalClose = document.getElementById('noteModalClose');
 
-fabAdd.addEventListener('click', () => {
+// Üst panel butonları
+document.getElementById('createTestBtn').addEventListener('click', () => {
   typeModal.classList.remove('hidden');
+});
+
+document.getElementById('createNoteBtn').addEventListener('click', () => {
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteContent').value = '';
+  noteModal.classList.remove('hidden');
+});
+
+document.getElementById('viewNotesBtn').addEventListener('click', () => {
+  showNotesPanel();
+});
+
+document.getElementById('darkModeToggle').addEventListener('click', () => {
+  toggleDarkMode();
 });
 
 typeModalClose.addEventListener('click', () => {
@@ -401,6 +480,89 @@ typeModalClose.addEventListener('click', () => {
 
 modalClose.addEventListener('click', () => {
   modal.classList.add('hidden');
+});
+
+noteModalClose.addEventListener('click', () => {
+  noteModal.classList.add('hidden');
+});
+
+// Gece modu toggle
+function toggleDarkMode() {
+  darkMode = !darkMode;
+  document.body.classList.toggle('dark-mode', darkMode);
+  
+  const icon = document.querySelector('#darkModeToggle .btn-icon');
+  icon.textContent = darkMode ? '☀️' : '🌙';
+  
+  // LocalStorage'a kaydet
+  localStorage.setItem('darkMode', darkMode);
+}
+
+// Sayfa yüklendiğinde gece modu tercihini kontrol et
+function loadDarkModePreference() {
+  const savedMode = localStorage.getItem('darkMode');
+  if (savedMode === 'true') {
+    darkMode = true;
+    document.body.classList.add('dark-mode');
+    const icon = document.querySelector('#darkModeToggle .btn-icon');
+    if (icon) icon.textContent = '☀️';
+  }
+}
+
+// Notlar panelini göster
+function showNotesPanel() {
+  const welcome = document.getElementById('welcome');
+  const solveArea = document.getElementById('solveArea');
+  const resultArea = document.getElementById('resultArea');
+
+  welcome.classList.add('hidden');
+  solveArea.classList.add('hidden');
+  resultArea.classList.remove('hidden');
+
+  resultArea.innerHTML = `
+    <div class="notes-panel">
+      <div class="notes-panel-header">
+        <h2>Notlarım</h2>
+        <button class="btn outline" onclick="backToHome()">
+          ← Geri Dön
+        </button>
+      </div>
+      <div id="notesContainer" class="notes-list"></div>
+    </div>
+  `;
+  
+  loadNotes();
+}
+
+// Not kaydet
+document.getElementById('saveNote').addEventListener('click', async () => {
+  const title = document.getElementById('noteTitle').value.trim();
+  const content = document.getElementById('noteContent').value.trim();
+  
+  if (!title || !content) {
+    alert('Lütfen başlık ve içerik girin!');
+    return;
+  }
+  
+  try {
+    await db.collection('notes').add({
+      title,
+      content,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    noteModal.classList.add('hidden');
+    alert('Not başarıyla kaydedildi!');
+    
+    // Eğer notlar paneli açıksa yenile
+    const notesContainer = document.getElementById('notesContainer');
+    if (notesContainer) {
+      await loadNotes();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Not kaydedilemedi!');
+  }
 });
 
 // Tip seçimi
@@ -541,8 +703,8 @@ function renderQuestions() {
         <div class="qblock" data-index="${i}">
           <div class="qblock-header">
             <strong>Soru ${i + 1}</strong>
-            <button class="btn danger" onclick="removeQuestion(${i})">
-              <span class="btn-icon">🗑️</span>
+            <button class="btn delete-btn" onclick="removeQuestion(${i})" title="Sil">
+              🗑
             </button>
           </div>
           <textarea placeholder="Soru metni..." onchange="updateQuestion(${i}, 'text', this.value)">${q.text}</textarea>
@@ -582,8 +744,8 @@ function renderQuestions() {
         <div class="qblock" data-index="${i}">
           <div class="qblock-header">
             <strong>Soru ${i + 1}</strong>
-            <button class="btn danger" onclick="removeQuestion(${i})">
-              <span class="btn-icon">🗑️</span>
+            <button class="btn delete-btn" onclick="removeQuestion(${i})" title="Sil">
+              🗑
             </button>
           </div>
           <textarea placeholder="Soru metni (boşluk için ___ kullanın)..." onchange="updateQuestion(${i}, 'text', this.value)">${q.text}</textarea>
@@ -691,7 +853,8 @@ document.getElementById('mSaveTest').addEventListener('click', async () => {
   }
 });
 
-// Sayfa yüklendiğinde testleri getir
+// Sayfa yüklendiğinde
 window.addEventListener('DOMContentLoaded', () => {
+  loadDarkModePreference();
   loadTests();
 });
