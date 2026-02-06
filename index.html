@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <title>Online Test Sistemi - Pro</title>
+  <title>Test Sistemi</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -10,24 +10,41 @@
   <script src="firebase.js"></script>
 </head>
 <body>
-  <button id="fabAdd" class="fab" title="Test / Soru Ekle">+</button>
+  <!-- Üst Panel -->
+  <header class="top-panel">
+    <div class="top-panel-content">
+      <h1 class="logo">Test Sistemi</h1>
+      <nav class="top-nav">
+        <button id="createTestBtn" class="nav-btn">
+          <span class="btn-icon">➕</span>
+          <span class="btn-text">Test Oluştur</span>
+        </button>
+        <button id="createNoteBtn" class="nav-btn">
+          <span class="btn-icon">📝</span>
+          <span class="btn-text">Not Ekle</span>
+        </button>
+        <button id="viewNotesBtn" class="nav-btn">
+          <span class="btn-icon">📋</span>
+          <span class="btn-text">Notlarım</span>
+        </button>
+        <button id="darkModeToggle" class="nav-btn">
+          <span class="btn-icon">🌙</span>
+        </button>
+      </nav>
+    </div>
+  </header>
 
   <div class="app">
-    <header class="topbar">
-      <h1>Online Test Sistemi</h1>
-      <p class="muted">Testleri çözün ve son sonuçları anlık olarak görün.</p>
-    </header>
-
     <main class="main-grid">
       <section class="tests-list panel">
-        <h2>Mevcut Testler</h2>
+        <h2>Testler</h2>
         <div id="testsContainer" class="cards"></div>
       </section>
 
       <section class="work-area panel" id="workArea">
         <div id="welcome" class="welcome">
-          <h2>Başlamak için bir test seçin</h2>
-          <p>Sol taraftaki listeden bir teste tıklayarak hemen çözmeye başlayabilirsiniz.</p>
+          <h2>Teste Başla</h2>
+          <p>Sol taraftaki listeden bir teste tıklayarak çözmeye başlayabilirsiniz.</p>
         </div>
         <div id="solveArea" class="hidden"></div>
         <div id="resultArea" class="hidden panel"></div>
@@ -51,7 +68,7 @@
             <p>A, B, C, D şıklarından oluşan klasik test formatı</p>
           </button>
           <button id="selectFillBlank" class="type-card">
-            <div class="type-icon">✍️</div>
+            <div class="type-icon">✏️</div>
             <h4>Boşluk Doldurma</h4>
             <p>Cümlelerdeki boşlukları dolduran test formatı</p>
           </button>
@@ -103,6 +120,33 @@
           </button>
           <button id="mSaveTest" class="btn success">
             <span class="btn-icon">✓</span> Testi Yayınla
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Not Ekleme Modalı -->
+  <div id="noteModal" class="modal hidden">
+    <div class="modal-card note-modal">
+      <div class="modal-head">
+        <h3>Yeni Not Ekle</h3>
+        <button id="noteModalClose" class="closeBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Not Başlığı</label>
+          <input id="noteTitle" type="text" placeholder="Örn: Matematik Formülleri" />
+        </div>
+
+        <div class="form-group">
+          <label>Not İçeriği</label>
+          <textarea id="noteContent" placeholder="Notunuzu buraya yazın..." style="min-height: 200px;"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button id="saveNote" class="btn success">
+            <span class="btn-icon">✓</span> Notu Kaydet
           </button>
         </div>
       </div>
