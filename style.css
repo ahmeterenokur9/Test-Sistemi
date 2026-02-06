@@ -64,22 +64,25 @@ body{
   color: var(--accent);
 }
 
+.top-right-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
 /* Kumbara Gösterimi */
 .piggy-bank-display {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 8px 16px;
   background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   border: 2px solid #f59e0b;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
   transition: all 0.3s;
   user-select: none;
 }
-
-
 
 .piggy-bank-display:hover {
   transform: translateY(-2px);
@@ -98,22 +101,26 @@ body.dark-mode .piggy-bank-display:hover {
 
 .piggy-icon {
   font-size: 24px;
-  
+  animation: piggyBounce 2s infinite ease-in-out;
+}
+
+@keyframes piggyBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 .piggy-info {
   display: flex;
   flex-direction: column;
-  gap: 0px;  /* 2px'den 0px'e */
+  gap: 2px;
 }
 
 .piggy-label {
-  font-size: 10px;  /* 11px'den 10px'e */
+  font-size: 11px;
   font-weight: 600;
   color: #92400e;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  line-height: 1;  /* EKLEYIN */
 }
 
 body.dark-mode .piggy-label {
@@ -121,11 +128,10 @@ body.dark-mode .piggy-label {
 }
 
 .piggy-amount {
-  font-size: 16px;  /* 18px'den 16px'e */
+  font-size: 18px;
   font-weight: 800;
   color: #92400e;
   font-family: 'Courier New', monospace;
-  line-height: 1;  /* EKLEYIN */
 }
 
 body.dark-mode .piggy-amount {
@@ -1206,17 +1212,6 @@ body.dark-mode .correct-blank-answer{
     width: 100%;
     justify-content: space-between;
     flex-wrap: wrap;
-  }
-
-  .top-right-section {
-    width: 100%;
-    flex-direction: row;  /* column'dan row'a değiştirin */
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .piggy-bank-display {
-    flex: 0 0 auto;  /* EKLEYIN - genişlemeyi engellemek için */
   }
 
   .nav-btn {
