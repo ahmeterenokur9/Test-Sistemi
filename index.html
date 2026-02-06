@@ -14,23 +14,33 @@
   <header class="top-panel">
     <div class="top-panel-content">
       <h1 class="logo">Test Sistemi</h1>
-      <nav class="top-nav">
-        <button id="createTestBtn" class="nav-btn">
-          <span class="btn-icon">➕</span>
-          <span class="btn-text">Test Oluştur</span>
-        </button>
-        <button id="createNoteBtn" class="nav-btn">
-          <span class="btn-icon">📝</span>
-          <span class="btn-text">Not Ekle</span>
-        </button>
-        <button id="viewNotesBtn" class="nav-btn">
-          <span class="btn-icon">📋</span>
-          <span class="btn-text">Notlarım</span>
-        </button>
-        <button id="darkModeToggle" class="nav-btn">
-          <span class="btn-icon">🌙</span>
-        </button>
-      </nav>
+      <div class="top-right-section">
+        <!-- Kumbara Gösterimi -->
+        <div class="piggy-bank-display">
+          <span class="piggy-icon">🏦</span>
+          <div class="piggy-info">
+            <span class="piggy-label">Kumbara</span>
+            <span class="piggy-amount" id="piggyBankAmount">0</span>
+          </div>
+        </div>
+        <nav class="top-nav">
+          <button id="createTestBtn" class="nav-btn">
+            <span class="btn-icon">➕</span>
+            <span class="btn-text">Test Oluştur</span>
+          </button>
+          <button id="createNoteBtn" class="nav-btn">
+            <span class="btn-icon">📝</span>
+            <span class="btn-text">Not Ekle</span>
+          </button>
+          <button id="viewNotesBtn" class="nav-btn">
+            <span class="btn-icon">📋</span>
+            <span class="btn-text">Notlarım</span>
+          </button>
+          <button id="darkModeToggle" class="nav-btn">
+            <span class="btn-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
     </div>
   </header>
 
@@ -119,7 +129,7 @@
             <span class="btn-icon">🔄</span> Sıfırla
           </button>
           <button id="mSaveTest" class="btn success">
-            <span class="btn-icon">✓</span> Testi Yayınla
+            <span class="btn-icon">✔</span> Testi Yayınla
           </button>
         </div>
       </div>
@@ -146,7 +156,7 @@
 
         <div class="modal-footer">
           <button id="saveNote" class="btn success">
-            <span class="btn-icon">✓</span> Notu Kaydet
+            <span class="btn-icon">✔</span> Notu Kaydet
           </button>
         </div>
       </div>
